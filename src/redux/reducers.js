@@ -4,6 +4,7 @@ import {
   UPDATE_TODO_STATUS,
   CLEAR_COMPLETED,
 } from './actions';
+import { createSelector } from 'reselect';
 
 export const VisibilityFilters = {
   SHOW_ALL: 'All',
@@ -27,7 +28,7 @@ export const reducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         todos: state.todos.map(todo => 
-          updatedTodo === todo ? { ...todo, complete: action.complete } : todo
+          action.todo === todo ? { ...todo, complete: action.complete } : todo
         )
       };
     case UPDATE_FILTER:
@@ -43,4 +44,22 @@ export const reducer = (state = INITIAL_STATE, action) => {
     default: 
       return state;
   }
-}
+};
+
+const getTodosSelector = state => state.todos;
+const getFilterSelector = state => state.filter;
+
+export const getVisibleTodosSelector = createSelector(
+  getTodosSelector,
+  getFilterSelector,
+  (todos, filter) => {
+    switch(filter) {
+      case VisibilityFilters.SHOW_ACTIVE:
+        return todos.filter(todo => !todo.complete);
+      case VisibilityFilters.SHOW_COMPLETED:
+        return todos.filter(todo => todo.complete);
+      default:
+        return todos;
+    }
+  }
+)
